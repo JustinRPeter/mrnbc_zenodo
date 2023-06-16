@@ -1,0 +1,169 @@
+#!/bin/bash
+# Run the MRNBC_PARALLEL.R code
+
+#PBS -q normal
+#PBS -P er4
+#PBS -N JOBNAME_GCM_SCN
+#PBS -l walltime=48:00:00
+#PBS -l ncpus=96
+#PBS -l mem=380gb
+#PBS -l wd
+#PBS -o JOBNAME_GCM_SCN.out
+#PBS -e JOBNAME_GCM_SCN.error
+#PBS -m e
+#PBS -M justin.peter@bom.gov.au
+#PBS -lstorage=gdata/eg3+gdata/er4+scratch/eg3+scratch/wj02+scratch/er4
+
+##PBS -l jobfs=1000GB
+##PBS -l jobfs=500GB
+##PBS -l jobfs=2000GB
+
+
+##PBS -l ncpus=96
+##PBS -l mem=375gb
+
+##PBS -l walltime=48:00:00
+##PBS -l ncpus=144
+##PBS -l mem=565gb
+
+##PBS -l walltime=48:00:00
+##PBS -l ncpus=240
+##PBS -l mem=940gb
+
+##PBS -l walltime=24:00:00
+##PBS -l ncpus=960
+##PBS -l mem=3720gb
+
+
+
+##PBS -l ncpus=144
+##PBS -l mem=560gb
+
+##PBS -l walltime=48:00:00
+##PBS -l ncpus=240
+##PBS -l mem=870gb
+##PBS -l mem=920gb
+
+
+##PBS -l walltime=48:00:00
+##PBS -l ncpus=480
+##PBS -l mem=1860gb
+
+##PBS -l walltime=24:00:00
+##PBS -l ncpus=1440
+##PBS -l mem=5620gb
+##PBS -l mem=5680gb
+
+##PBS -l walltime=10:00:00
+##PBS -l ncpus=2976
+##PBS -l mem=11700gb
+
+##PBS -l walltime=48:00:00
+##PBS -l ncpus=672
+##PBS -l mem=2580gb
+
+
+##PBS -l ncpus=1440
+##PBS -l mem=5620gb
+
+##PBS -l ncpus=960
+##PBS -l mem=3720gb
+
+##PBS -l ncpus=2976
+##PBS -l mem=11700gb
+
+##PBS -l ncpus=192
+##PBS -l mem=6016gb
+
+##PBS -l ncpus=20736
+##PBS -l mem=82080gb
+
+# For BC at GCM resolution
+##PBS -l ncpus=240
+##PBS -l mem=720gb
+
+# FOR MRNBC at AWAP res when data prepared
+##PBS -l ncpus=3168
+##PBS -l mem=12540gb
+
+#module load R/3.5.1
+#module load R
+
+#module load parallel/20190322
+#module load parallel/20191022
+
+module load nci-parallel/1.0.0
+
+declare -a model=GCM
+declare -a scenario=SCN
+
+#cd /g/data/er4/jp0715/HydroProj/code/unsw/run_mrnbc 
+
+#output=${PBS_JOBID}.outputs
+
+#mkdir ${output}
+
+# Using jobfs
+#INPUT_DIR=${PBS_O_WORKDIR}
+#OUTPUT_DIR=/scratch/eg3/jp0715/HydroProj/data/unsw/mrnbc_output/awap_res/${model}/${scenario}/2006-2035
+
+#cp -r ${INPUT_DIR} ${PBS_JOBFS}/mydata
+##cp ${INPUT_DIR} ${PBS_JOBFS}/mydata # Don't think I need subdirectories
+#cd ${PBS_JOBFS}/mydata
+
+
+#Try using whole command as input
+#cat inputs_${model}_${scenario}.txt | parallel -j ${PBS_NCPUS}  pbsdsh -n {%} -- bash -l -c '{}'
+
+# Try nci-parallel
+#mpirun --nooversubscribe --map-by ppr:36:node nci-parallel --dedicated --input-file inputs_at_awap_res_${model}_${scenario}.txt
+#mpirun --np $(( 40 * PBC_NCPUS / 48 )) --map-by numa:SPAN --rank-by slot nci-parallel --input-file inputs_at_awap_res_reversed_${model}_${scenario}.txt
+#mpirun --np $(( 24 * PBC_NCPUS / 48 )) --map-by numa:SPAN --rank-by slot nci-parallel --poll 200ms --input-file inputs_at_awap_res_${model}_${scenario}.txt
+#mpirun --np $(( 16 * PBC_NCPUS / 48 )) --map-by numa:SPAN --rank-by slot -mca hwloc_base_mem_alloc_policy none nci-parallel --status status_at_awap_res_${model}_${scenario}.txt --input-file inputs_at_awap_res_${model}_${scenario}.txt
+
+#mpirun --np $(( 12 * PBC_NCPUS / 48 )) --map-by numa:SPAN --rank-by slot nci-parallel --status status_at_awap_res_${model}_${scenario}.txt --input-file inputs_at_awap_res_${model}_${scenario}.txt
+
+#mpirun --np $(( 12 * PBC_NCPUS / 48 )) --map-by numa:SPAN --rank-by slot nci-parallel --status status_at_awap_res_${model}_${scenario}.txt --input-file inputs_at_awap_res_${model}_${scenario}.txt > outputs_at_awap_res_${model}_${scenario}.txt 2> errors_at_awap_res_${model}_${scenario}.txt 
+
+#mpirun --np $(( 20 * PBC_NCPUS / 48 )) --map-by numa:SPAN --rank-by slot nci-parallel --status status_at_awap_res_${model}_${scenario}.txt --input-file inputs_at_awap_res_${model}_${scenario}.txt > outputs_at_awap_res_${model}_${scenario}.txt 2> errors_at_awap_res_${model}_${scenario}.txt 
+
+#mpirun --np $(( 36 * PBC_NCPUS / 48 )) --map-by numa:SPAN --rank-by slot nci-parallel --status status_at_awap_res_${model}_${scenario}.txt --input-file inputs_at_awap_res_${model}_${scenario}.txt > outputs_at_awap_res_${model}_${scenario}.txt 2> errors_at_awap_res_${model}_${scenario}.txt 
+
+# Used for final runs
+mpirun --np $(( 40 * PBC_NCPUS / 48 )) --map-by numa:SPAN --rank-by slot nci-parallel --status status_at_awap_res_${model}_${scenario}.txt --input-file inputs_at_awap_res_${model}_${scenario}.txt > outputs_at_awap_res_${model}_${scenario}.txt 2> errors_at_awap_res_${model}_${scenario}.txt 
+
+# Used to reproduce incomplete runs
+#mpirun --np $(( 40 * PBC_NCPUS / 48 )) --map-by numa:SPAN --rank-by slot nci-parallel --input-file inputs_at_awap_res_${model}_${scenario}_partial.txt > outputs_at_awap_res_${model}_${scenario}.txt 2> errors_at_awap_res_${model}_${scenario}.txt 
+
+#export ncores_per_task=1
+#export ncores_per_numanode=12
+
+#mpirun -np $((PBS_NCPUS/ncores_per_task)) --map-by ppr:$((ncores_per_numanode/ncores_per_task)):NUMA:PE=${ncores_per_task} nci-parallel --status status_at_awap_res_${model}_${scenario}.txt --input-file inputs_at_awap_res_${model}_${scenario}.txt > outputs_at_awap_res_${model}_${scenario}.txt 2> errors_at_awap_res_${model}_${scenario}.txt 
+
+# Attempt to use PBS_JOBFS
+#mpirun --np $(( 36 * PBC_NCPUS / 48 )) --map-by numa:SPAN --rank-by slot nci-parallel --status status_at_awap_res_time_slices_${model}_${scenario}.txt --input-file inputs_at_awap_res_time_slices_${model}_${scenario}.txt > outputs_at_awap_res_time_slices_${model}_${scenario}.txt 2> errors_at_awap_res_time_slices_${model}_${scenario}.txt 
+
+#mpirun --np $(( 40 * PBC_NCPUS / 48 )) --map-by numa:SPAN --rank-by slot nci-parallel --status status_at_awap_res_${model}_${scenario}.txt --input-file inputs_at_awap_res_${model}_${scenario}.txt > outputs_at_awap_res_${model}_${scenario}.txt 2> errors_at_awap_res_${model}_${scenario}.txt 
+#mpirun --np $(( 40 * PBC_NCPUS / 48 )) --map-by numa:SPAN --rank-by slot nci-parallel --status status_at_awap_res_${model}_${scenario}.txt --input-file inputs_at_awap_res_${model}_${scenario}.txt > outputs_at_awap_res_${model}_${scenario}.txt 2> errors_at_awap_res_${model}_${scenario}.txt 
+
+#Remove status to see if we can run multiple time slices
+#mpirun --np $(( 36 * PBC_NCPUS / 48 )) --map-by numa:SPAN --rank-by slot nci-parallel  --input-file inputs_at_awap_res_${model}_${scenario}.txt > outputs_at_awap_res_${model}_${scenario}.txt 2> errors_at_awap_res_${model}_${scenario}.txt 
+
+#mpirun --np $(( 20 * PBC_NCPUS / 48 )) --map-by numa:SPAN --rank-by slot nci-parallel --status status_at_awap_res_${model}_${scenario}.txt --input-file inputs_at_awap_res_${model}_${scenario}.txt --output-dir ${output}
+
+#mpirun --np $(( 36 * PBC_NCPUS / 48 )) --map-by numa:SPAN --rank-by slot nci-parallel --poll 250ms --input-file inputs_at_awap_res_${model}_${scenario}.txt
+#mpirun nci-parallel  --input-file inputs_at_awap_res_${model}_${scenario}.txt
+#mpirun --map-by ppr:24:node nci-parallel --input-file inputs_at_awap_res_${model}_${scenario}.txt
+#mpirun --map-by ppr:36:node nci-parallel --input-file inputs_at_awap_res_${model}_${scenario}.txt
+
+##tar -cf ${PBS_JOBID}.tar ./mydata/outdata/
+##cp ${PBS_JOBID}.tar $OUTPUT_DIR
+
+wait
+
+##tar -cf ${PBS_JOBID}.tar ./mydata/outdata/
+#tar -cf ${PBS_JOBID}.tar ./outdata/
+##tar -cf ${PBS_JOBID}.tar ${PBS_JOBFS}/mydata/outdata/
+#cp ${PBS_JOBID}.tar $OUTPUT_DIR
+
+

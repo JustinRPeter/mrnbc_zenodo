@@ -1,0 +1,19 @@
+
+EXECUTABLE=mrnbc_ifort
+
+FC=ifort
+FCFLAGS= -W1 -c
+SOURCES=MRNBC_main.f MRNBC_QMM.f MRNBC_stat.f
+CONFIGS=data.inc dimension.inc temp.inc
+OBJECTS=$(SOURCES:.f=.o)
+
+all: $(SOURCES) $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS) 
+	$(FC) $(OBJECTS) -o $@
+
+.f.o: 
+	$(FC) $(FCFLAGS) $< 
+
+
+
